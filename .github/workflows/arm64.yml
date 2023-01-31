@@ -1,7 +1,6 @@
 name: arm64 R builds
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       platforms:
@@ -149,4 +148,4 @@ jobs:
             *-rstudio-*.deb
             *-rstudio-*.rpm
           name: "Latest builds"
-          tag_name: latest
+          tag_name: ${{ matrix.r_version }}
