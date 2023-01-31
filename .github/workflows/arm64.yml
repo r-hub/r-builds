@@ -1,7 +1,6 @@
 name: arm64 R builds
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       platforms:
@@ -18,8 +17,6 @@ on:
         required: false
         default: 'last-5'
         type: string
-  schedule:
-    - cron:  '55 3 * * *'
 
 permissions:
   contents: write
