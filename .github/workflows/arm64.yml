@@ -1,6 +1,7 @@
 name: arm64 R builds
 
 on:
+  push:
   workflow_dispatch:
     inputs:
       platforms:
@@ -137,7 +138,7 @@ jobs:
 
       - name: Copy and rename package
         run: |
-          pkg=$(find integration -name "*.deb" -or -name "*.rpm")
+          pkg=$(find builder/integration -name "*.deb" -or -name "*.rpm")
           cp "$pkg" $(echo $pkg | sed "s|/r-|/r-rstudio-${{ matrix.platform }}-|")
           ls -l "$pkg"
 
