@@ -138,7 +138,7 @@ jobs:
       - name: Copy and rename package
         run: |
           pkg=$(find builder/integration -name "*.deb" -or -name "*.rpm")
-          pkg2=$(echo $pkg | sed "s|/r-|/r-rstudio-${{ matrix.platform }}-|")
+          pkg2=$(echo $pkg | sed "s|/[rR]-|/r-rstudio-${{ matrix.platform }}-|")
           pkg2=$(basename "$pkg2")
           cp "$pkg" "$pkg2"
           ls -l .
