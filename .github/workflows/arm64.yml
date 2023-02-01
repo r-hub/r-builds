@@ -37,7 +37,7 @@ jobs:
       run: |
         platforms=$(python test/get_platforms.py ${{ github.event.inputs.platforms }})
         echo "platforms=$platforms" >> $GITHUB_OUTPUT
-        r_versions=$(python test/get_r_versions.py ${{ github.event.inputs.r_versions || "next,devel" }})
+        r_versions=$(python test/get_r_versions.py ${{ github.event.inputs.r_versions || 'next,devel' }})
         echo "r_versions=$r_versions" >> $GITHUB_OUTPUT
 
   docker-images:
@@ -75,7 +75,7 @@ jobs:
       # does not seem to work as of docker-compose v2.6.0 and buildx v0.8.2, even
       # though it works with buildx individually.
       - name: Build image
-        if: false()
+        if: ${{ false }}
         run: |
           docker buildx build -t r-builds:${{ matrix.platform }} \
             --platform linux/arm64 \
@@ -130,7 +130,7 @@ jobs:
             builder
 
       - name: Build R
-        if: false()
+        if: ${{ false }}
         run: |
           cd builder && docker-compose up ${{ matrix.platform }}
         env:
@@ -139,7 +139,7 @@ jobs:
 
       - name: Testing
         run: |
-          mkdir -p builder/integration/tmp/${{matrix.platform}
+          mkdir -p builder/integration/tmp/${{matrix.platform}}
           curl -L -o builder/integration/tmp/${{ matrix.platform }}/r-${{ matrix.r_version }}_1_arm64.deb https://github.com/r-hub/R/releases/download/v${{ matrix.r_version}}/r-rstudio-${{ matrix.platform }}-${{ matrix.r_version }}_1_arm64.deb
 
       - name: Copy and rename package
