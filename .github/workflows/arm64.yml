@@ -75,7 +75,6 @@ jobs:
       # does not seem to work as of docker-compose v2.6.0 and buildx v0.8.2, even
       # though it works with buildx individually.
       - name: Build image
-        if: ${{ false }}
         run: |
           docker buildx build -t r-builds:${{ matrix.platform }} \
             --platform linux/arm64 \
@@ -88,7 +87,6 @@ jobs:
       # https://github.com/docker/build-push-action/issues/252
       # https://github.com/moby/buildkit/issues/1896
       - name: Move cache
-        if: ${{ false }}
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
@@ -122,7 +120,6 @@ jobs:
           restore-keys: ${{ matrix.platform }}-arm64-buildx-
 
       - name: Load cached Docker image
-        if: ${{ false }}
         run: |
           docker buildx build -t r-builds:${{ matrix.platform }} \
             --platform linux/arm64 \
@@ -132,17 +129,11 @@ jobs:
             builder
 
       - name: Build R
-        if: ${{ false }}
         run: |
           cd builder && docker-compose up ${{ matrix.platform }}
         env:
           R_VERSION: ${{ matrix.r_version }}
           DOCKER_DEFAULT_PLATFORM: linux/arm64
-
-      - name: Testing
-        run: |
-          mkdir -p builder/integration/tmp/${{matrix.platform}}
-          curl -L -o builder/integration/tmp/${{ matrix.platform }}/r-${{ matrix.r_version }}_1_arm64.deb https://github.com/r-hub/R/releases/download/v${{ matrix.r_version}}/r-rstudio-${{ matrix.platform }}-${{ matrix.r_version }}_1_arm64.deb
 
       - name: Copy and rename package
         run: |
