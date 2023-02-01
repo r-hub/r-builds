@@ -15,11 +15,13 @@ on:
           last N minor R versions, or "all" to use all minor R versions since R 3.1.
           Defaults to "last-5".
         required: false
-        default: 'last-5'
+        default: 'next,devel'
         type: string
+  schedule:
+  - cron:  '55 2 * * *'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   setup-matrix:
@@ -35,7 +37,7 @@ jobs:
       run: |
         platforms=$(python test/get_platforms.py ${{ github.event.inputs.platforms }})
         echo "platforms=$platforms" >> $GITHUB_OUTPUT
-        r_versions=$(python test/get_r_versions.py ${{ github.event.inputs.r_versions }})
+        r_versions=$(python test/get_r_versions.py ${{ github.event.inputs.r_versions || "next,devel" }})
         echo "r_versions=$r_versions" >> $GITHUB_OUTPUT
 
   docker-images:
@@ -136,14 +138,18 @@ jobs:
       - name: Copy and rename package
         run: |
           pkg=$(find builder/integration -name "*.deb" -or -name "*.rpm")
-          cp "$pkg" $(echo $pkg | sed "s|/r-|/r-rstudio-${{ matrix.platform }}-|")
-          ls -l "$pkg"
+          pkg2=$(echo $pkg | sed "s|/r-|/r-rstudio-${{ matrix.platform }}-|")
+          pkg2=$(basename "$pkg2")
+          cp "$pkg" "$pkg2"
+          ls -l .
 
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
+          repository: r-hub/R
+          token: ${{ secrets.DEPLOY_TOKEN }}
           files: |
             *-rstudio-*.deb
             *-rstudio-*.rpm
           name: "Latest builds"
-          tag_name: ${{ matrix.r_version }}
+          tag_name: v${{ matrix.r_version }}
