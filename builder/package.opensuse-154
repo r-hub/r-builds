@@ -55,9 +55,9 @@ homepage: https://www.r-project.org
 license: GPLv2+
 depends:
 - fontconfig
-- ${gxx_package-g++}
-- ${gcc_package-gcc}
-- ${gfortran_package-gfortran}
+- gcc
+- gcc-c++
+- gcc-fortran
 - glibc-locale
 - gzip
 - icu.691-devel
