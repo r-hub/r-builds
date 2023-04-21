@@ -64,17 +64,6 @@ fetch_r_source() {
   rm /tmp/R-${1}.tar.gz
 }
 
-install_libcurl() {
-    cd /tmp
-    curl -LO https://curl.se/download/curl-7.32.0.tar.gz
-    tar xzf curl-*.tar.gz
-    yum install -y zlib-devel openssl-devel make groff
-    cd curl-7.32.0
-    ./configure --disable-shared --with-pic
-    make
-    make install
-}
-
 # compile_r() - $1 as r version
 compile_r() {
   cd /tmp/R-${1}
@@ -204,12 +193,7 @@ package_r() {
 }
 
 set_up_environment() {
-    mkdir -p "$R_INSTALL_PATH"
-    if _version_is_greater_than ${R_VERSION} 4.2.10; then
-        if [[ "${OS_IDENTIFIER}" = "centos-7" ]]; then
-            install_libcurl
-        fi
-    fi
+  mkdir -p "$R_INSTALL_PATH"
 }
 
 _version_is_greater_than() {
