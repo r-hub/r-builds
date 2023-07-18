@@ -19,12 +19,12 @@ bug, or ask questions on [Posit Community](https://community.rstudio.com).
 
 R binaries are built for the following Linux operating systems:
 
-- Ubuntu 18.04, 20.04, 22.04
-- Debian 10, 11
+- Ubuntu 20.04, 22.04
+- Debian 10, 11, 12
 - CentOS 7
 - Red Hat Enterprise Linux 7, 8, 9
-- openSUSE 15.3, 15.4
-- SUSE Linux Enterprise 15 SP3, 15 SP4
+- openSUSE 15.4
+- SUSE Linux Enterprise 15 SP4
 
 Operating systems are supported until their vendor end-of-support dates, which
 can be found on the [Posit Platform Support](https://posit.co/about/platform-support/)
@@ -56,9 +56,6 @@ R_VERSION=4.1.3
 
 Download the deb package:
 ```bash
-# Ubuntu 18.04
-curl -O https://cdn.posit.co/r/ubuntu-1804/pkgs/r-${R_VERSION}_1_amd64.deb
-
 # Ubuntu 20.04
 curl -O https://cdn.posit.co/r/ubuntu-2004/pkgs/r-${R_VERSION}_1_amd64.deb
 
@@ -70,6 +67,9 @@ curl -O https://cdn.posit.co/r/debian-10/pkgs/r-${R_VERSION}_1_amd64.deb
 
 # Debian 11
 curl -O https://cdn.posit.co/r/debian-11/pkgs/r-${R_VERSION}_1_amd64.deb
+
+# Debian 12
+curl -O https://cdn.posit.co/r/debian-12/pkgs/r-${R_VERSION}_1_amd64.deb
 ```
 
 Then install the package:
@@ -137,9 +137,6 @@ sudo yum install R-${R_VERSION}-1-1.x86_64.rpm
 
 Download the rpm package:
 ```bash
-# openSUSE 15.3 / SLES 15 SP3
-curl -O https://cdn.posit.co/r/opensuse-153/pkgs/R-${R_VERSION}-1-1.x86_64.rpm
-
 # openSUSE 15.4 / SLES 15 SP4
 curl -O https://cdn.posit.co/r/opensuse-154/pkgs/R-${R_VERSION}-1-1.x86_64.rpm
 ```
@@ -288,7 +285,7 @@ environment:
   # snip
   JOB_DEFINITION_ARN_debian_11:
     Ref: rBuildsBatchJobDefinitionDebian11
-  SUPPORTED_PLATFORMS: ubuntu-1804,debian-10,centos-7,centos-8
+  SUPPORTED_PLATFORMS: debian-10,centos-7,centos-8
 ```
 
 ### Makefile

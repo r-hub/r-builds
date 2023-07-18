@@ -1,4 +1,4 @@
-PLATFORMS := ubuntu-1804 ubuntu-2004 ubuntu-2204 debian-10 debian-11 centos-7 centos-8 rhel-9 opensuse-153 opensuse-154
+PLATFORMS := ubuntu-2004 ubuntu-2204 debian-10 debian-11 debian-12 centos-7 centos-8 rhel-9 opensuse-154
 SLS_BINARY ?= ./node_modules/serverless/bin/serverless.js
 
 deps:
@@ -37,7 +37,7 @@ rebuild-all: deps fetch-serverless-custom-file
 	$(SLS_BINARY) invoke stepf -n rBuilds -d '{"force": true}'
 
 serverless-deploy.%: deps fetch-serverless-custom-file
-	$(SLS_BINARY) deploy --stage $*
+	$(SLS_BINARY) deploy --stage $* --verbose
 
 define GEN_TARGETS
 docker-build-$(platform):

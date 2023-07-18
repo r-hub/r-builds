@@ -4,17 +4,18 @@ if [[ ! -d /tmp/output/${OS_IDENTIFIER} ]]; then
   mkdir -p "/tmp/output/${OS_IDENTIFIER}"
 fi
 
-# R 3.x requires PCRE1
-pcre_lib='libpcre2-dev'
+# R 3.x requires PCRE1. On Debian 12, R 3.x also requires PCRE2 for Pango support.
+pcre_libs='- libpcre2-dev'
 if [[ "${R_VERSION}" =~ ^3 ]]; then
-  pcre_lib='libpcre3-dev'
+  pcre_libs='- libpcre2-dev
+- libpcre3-dev'
 fi
 
 cat <<EOF > /tmp/nfpm.yml
 name: r-${R_VERSION}
 version: 1
 version_schema: none
-section: universe/math
+section: gnu-r
 arch: $(dpkg --print-architecture)
 priority: optional
 maintainer: Posit Software, PBC <https://github.com/rstudio/r-builds>
@@ -27,27 +28,27 @@ deb:
   fields:
     Bugs: https://github.com/rstudio/r-builds/issues
 depends:
+- ca-certificates
 - g++
 - gcc
 - gfortran
 - libbz2-dev
 - libc6
 - libcairo2
-- libcurl4
+- libcurl4-openssl-dev
 - libglib2.0-0
 - libgomp1
 - libicu-dev
-- libjpeg8
 - liblzma-dev
 - libopenblas-dev
 - libpango-1.0-0
 - libpangocairo-1.0-0
 - libpaper-utils
-- ${pcre_lib}
+${pcre_libs}
 - libpng16-16
-- libreadline7
+- libreadline8
 - libtcl8.6
-- libtiff5
+- libtiff6
 - libtk8.6
 - libx11-6
 - libxt6

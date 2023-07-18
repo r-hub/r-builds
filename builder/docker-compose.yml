@@ -1,16 +1,4 @@
 services:
-  ubuntu-1804:
-    command: ./build.sh
-    environment:
-      - R_VERSION=${R_VERSION}
-      - R_INSTALL_PATH=${R_INSTALL_PATH}
-      - LOCAL_STORE=/tmp/output
-    build:
-      context: .
-      dockerfile: Dockerfile.ubuntu-1804
-    image: r-builds:ubuntu-1804
-    volumes:
-      - ./integration/tmp:/tmp/output
   ubuntu-2004:
     command: ./build.sh
     environment:
@@ -59,6 +47,18 @@ services:
     image: r-builds:debian-11
     volumes:
       - ./integration/tmp:/tmp/output
+  debian-12:
+    command: ./build.sh
+    environment:
+      - R_VERSION=${R_VERSION}
+      - R_INSTALL_PATH=${R_INSTALL_PATH}
+      - LOCAL_STORE=/tmp/output
+    build:
+      context: .
+      dockerfile: Dockerfile.debian-12
+    image: r-builds:debian-12
+    volumes:
+      - ./integration/tmp:/tmp/output
   centos-7:
     command: ./build.sh
     environment:
@@ -93,18 +93,6 @@ services:
       context: .
       dockerfile: Dockerfile.rhel-9
     image: r-builds:rhel-9
-    volumes:
-      - ./integration/tmp:/tmp/output
-  opensuse-153:
-    command: ./build.sh
-    environment:
-      - R_VERSION=${R_VERSION}
-      - R_INSTALL_PATH=${R_INSTALL_PATH}
-      - LOCAL_STORE=/tmp/output
-    build:
-      context: .
-      dockerfile: Dockerfile.opensuse-153
-    image: r-builds:opensuse-153
     volumes:
       - ./integration/tmp:/tmp/output
   opensuse-154:
