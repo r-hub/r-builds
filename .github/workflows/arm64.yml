@@ -151,5 +151,5 @@ jobs:
           files: |
             *-rstudio-*.deb
             *-rstudio-*.rpm
-          name: "Latest builds"
+          name: "R ${{ matrix.r_version }}"
           tag_name: v${{ matrix.r_version }}
