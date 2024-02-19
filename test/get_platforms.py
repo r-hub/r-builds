@@ -14,8 +14,10 @@ def main():
     )
     args = parser.parse_args()
     platforms = _get_platforms(which=args.platforms)
-    platforms.remove("fedora-37")
-    platforms.remove("fedora-38")
+    if "fedora-37" in platforms:
+        platforms.remove("fedora-37")
+    if "fedora-38" in platforms:
+        platforms.remove("fedora-38")
     print(json.dumps(platforms))
 
 
