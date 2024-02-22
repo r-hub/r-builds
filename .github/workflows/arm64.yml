@@ -29,6 +29,7 @@ jobs:
     outputs:
       platforms: ${{ steps.setup-matrix.outputs.platforms }}
       r_versions: ${{ steps.setup-matrix.outputs.r_versions }}
+      arm64: ${{ steps.setup-matrix.outputs.arm64 }}
     steps:
     - uses: actions/checkout@v4
 
@@ -39,9 +40,13 @@ jobs:
         echo "platforms=$platforms" >> $GITHUB_OUTPUT
         r_versions=$(python test/get_r_versions.py ${{ github.event.inputs.r_versions || 'next,devel' }})
         echo "r_versions=$r_versions" >> $GITHUB_OUTPUT
+        arm64=$(python test/get_arm64.py ${{ github.event.inputs.platforms || 'all' }} ${{ github.event.inputs.r_versions || 'next,devel' }})
+        echo "arm64=$arm64" >> $GITHUB_OUTPUT
+        cat $GITHUB_OUTPUT
 
   docker-images:
     needs: setup-matrix
+    if: ${{ needs.setup-matrix.outputs.platform != '' }}
     strategy:
       matrix:
         platform: ${{ fromJson(needs.setup-matrix.outputs.platforms) }}
@@ -93,6 +98,7 @@ jobs:
 
   build:
     needs: [setup-matrix, docker-images]
+    if: ${{ needs.setup-matrix.outputs.platforms != '' && needs.setup-matrix.outputs.r_versions != '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -138,6 +144,56 @@ jobs:
       - name: Copy and rename package
         run: |
           pkg=$(find builder/integration -name "*.deb" -or -name "*.rpm")
+          pkg2=$(echo $pkg | sed "s|/[rR]-|/r-rstudio-${{ matrix.platform }}-|")
+          pkg2=$(basename "$pkg2")
+          cp "$pkg" "$pkg2"
+          ls -l .
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          repository: r-hub/R
+          token: ${{ secrets.DEPLOY_TOKEN }}
+          files: |
+            *-rstudio-*.deb
+            *-rstudio-*.rpm
+          name: "R ${{ matrix.r_version }}"
+          tag_name: v${{ matrix.r_version }}
+
+  arm64:
+    needs: setup-matrix
+    if: ${{ always() && needs.setup-matrix.outputs.arm64 != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config: ${{ fromJson(needs.setup-matrix.outputs.arm64) }}
+    runs-on: [self-hosted, linux, ARM64]
+    name: Native (${{ matrix.config.platform }} ${{ matrix.config.rversion }})
+    container:
+      image: "ubuntu:22.04"
+      volumes:
+        - ${{ github.workspace }}:/${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: repo
+
+      - name: Install Docker
+        run: |
+          apt-get update && apt-get install -y docker.io docker-compose-v2
+
+      - name: Build R
+        run: |
+          cd ${{ github.workspace }}/repo
+          cd builder &&
+          mkdir -p integration &&
+          docker compose up ${{ matrix.config.platform }}
+        env:
+          R_VERSION: ${{ matrix.config.rversion }}
+
+      - name: Copy and rename package
+        run: |
+          pkg=$(find ${{ github.workspace }}/repo/builder/integration -name "*.deb" -or -name "*.rpm")
           pkg2=$(echo $pkg | sed "s|/[rR]-|/r-rstudio-${{ matrix.platform }}-|")
           pkg2=$(basename "$pkg2")
           cp "$pkg" "$pkg2"
