@@ -175,8 +175,6 @@ jobs:
         - ${{ github.workspace }}:/${{ github.workspace }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          path: repo
 
       - name: Install Docker
         run: |
@@ -184,7 +182,7 @@ jobs:
 
       - name: Build R
         run: |
-          cd ${{ github.workspace }}/repo
+          cd ${{ github.workspace }}
           cd builder &&
           mkdir -p integration &&
           docker compose up ${{ matrix.config.platform }}
@@ -193,8 +191,8 @@ jobs:
 
       - name: Copy and rename package
         run: |
-          pkg=$(find ${{ github.workspace }}/repo/builder/integration -name "*.deb" -or -name "*.rpm")
-          pkg2=$(echo $pkg | sed "s|/[rR]-|/r-rstudio-${{ matrix.platform }}-|")
+          pkg=$(find builder/integration -name "*.deb" -or -name "*.rpm")
+          pkg2=$(echo $pkg | sed "s|/[rR]-|/r-rstudio-${{ matrix.config.platform }}-|")
           pkg2=$(basename "$pkg2")
           cp "$pkg" "$pkg2"
           ls -l .
@@ -207,5 +205,5 @@ jobs:
           files: |
             *-rstudio-*.deb
             *-rstudio-*.rpm
-          name: "R ${{ matrix.r_version }}"
-          tag_name: v${{ matrix.r_version }}
+          name: "R ${{ matrix.config.rversion }}"
+          tag_name: v${{ matrix.config.rversion }}
