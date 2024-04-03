@@ -53,7 +53,7 @@ jobs:
 
       - name: Build R
         run: |
-          cd builder && docker-compose up ${{ matrix.platform }}
+          cd builder && docker compose up ${{ matrix.platform }}
         env:
           R_VERSION: ${{ matrix.r_version }}
           DOCKER_DEFAULT_PLATFORM: linux/arm64
