@@ -162,8 +162,7 @@ jobs:
 
   arm64:
     needs: setup-matrix
-    if: false
-#    if: ${{ always() && needs.setup-matrix.outputs.arm64 != '[]' }}
+    if: ${{ always() && needs.setup-matrix.outputs.arm64 != '[]' }}
     strategy:
       fail-fast: false
       matrix:
