@@ -14,6 +14,8 @@ def main():
     )
     args = parser.parse_args()
     platforms = _get_platforms(which=args.platforms)
+    if "fedora-40" in platforms:
+        platforms.remove("fedora-40")
     if "fedora-39" in platforms:
         platforms.remove("fedora-39")
     if "fedora-38" in platforms:
