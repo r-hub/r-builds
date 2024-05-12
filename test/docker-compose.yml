@@ -79,14 +79,6 @@ services:
       - R_VERSION=${R_VERSION}
     volumes:
       - ../:/r-builds
-  opensuse-154:
-    image: opensuse/leap:15.4
-    command: /r-builds/test/test-zypper.sh
-    environment:
-      - OS_IDENTIFIER=opensuse-154
-      - R_VERSION=${R_VERSION}
-    volumes:
-      - ../:/r-builds
   fedora-38:
     image: fedora:38
     command: /r-builds/test/test-yum.sh
@@ -100,6 +92,14 @@ services:
     command: /r-builds/test/test-yum.sh
     environment:
       - OS_IDENTIFIER=fedora-39
+      - R_VERSION=${R_VERSION}
+    volumes:
+      - ../:/r-builds
+  fedora-40:
+    image: fedora:40
+    command: /r-builds/test/test-yum.sh
+    environment:
+      - OS_IDENTIFIER=fedora-40
       - R_VERSION=${R_VERSION}
     volumes:
       - ../:/r-builds
