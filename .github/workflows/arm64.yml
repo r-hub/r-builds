@@ -185,6 +185,7 @@ jobs:
           cd ${{ github.workspace }}
           cd builder &&
           mkdir -p integration &&
+          docker compose build ${{ matrix.config.platform }}
           docker compose up ${{ matrix.config.platform }}
         env:
           R_VERSION: ${{ matrix.config.rversion }}
