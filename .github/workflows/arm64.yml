@@ -46,7 +46,7 @@ jobs:
 
   docker-images:
     needs: setup-matrix
-    if: ${{ needs.setup-matrix.outputs.platforms != '' }}
+    if: ${{ needs.setup-matrix.outputs.platforms != '' && needs.setup-matrix.outputs.platforms != '[]' }}
     strategy:
       matrix:
         platform: ${{ fromJson(needs.setup-matrix.outputs.platforms) }}
