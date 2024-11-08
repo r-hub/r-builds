@@ -4,7 +4,7 @@ import subprocess
 import re
 import urllib.request
 
-native_platforms = [ 'fedora-39', 'fedora-38', 'fedora-40', 'ubuntu-2404' ]
+native_platforms = [ 'fedora-39', 'fedora-38', 'fedora-40', 'fedora-41', 'ubuntu-2404' ]
 
 VERSIONS_URL = 'https://cdn.posit.co/r/versions.json'
 
