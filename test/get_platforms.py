@@ -24,6 +24,8 @@ def main():
         platforms.remove("fedora-38")
     if "ubuntu-2404" in platforms:
         platforms.remove("ubuntu-2404")
+    if "debian-11" in platforms:
+        platforms.remove("debian-11")
     print(json.dumps(platforms))
 
 
