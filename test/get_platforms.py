@@ -14,20 +14,6 @@ def main():
     )
     args = parser.parse_args()
     platforms = _get_platforms(which=args.platforms)
-    if "fedora-41" in platforms:
-        platforms.remove("fedora-41")
-    if "fedora-40" in platforms:
-        platforms.remove("fedora-40")
-    if "fedora-39" in platforms:
-        platforms.remove("fedora-39")
-    if "fedora-38" in platforms:
-        platforms.remove("fedora-38")
-    if "ubuntu-2404" in platforms:
-        platforms.remove("ubuntu-2404")
-    if "ubuntu-2204" in platforms:
-        platforms.remove("ubuntu-2204")
-    if "debian-11" in platforms:
-        platforms.remove("debian-11")
     print(json.dumps(platforms))
 
 
