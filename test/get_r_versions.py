@@ -3,7 +3,7 @@ import json
 import re
 import urllib.request
 
-VERSIONS_URL = 'https://cdn.posit.co/r/versions.json'
+VERSIONS_URL = 'https://api.r-hub.io/rversions/r-versions'
 
 # Minimum R version for "all"
 MIN_ALL_VERSION = '3.1.0'
@@ -64,7 +64,7 @@ def _get_supported_versions():
     response = urllib.request.urlopen(request)
     data = response.read()
     result = json.loads(data)
-    return result['r_versions']
+    return [ v["version"] for v in result ] + [ "next", "devel" ]
 
 
 if __name__ == '__main__':
