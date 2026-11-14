@@ -63,6 +63,12 @@ on:
         required: false
         default: false
         type: boolean
+      publish_github:
+        description: |
+          Publish the Linux builds to GitHub releases at https://github.com/r-hub/R/releases?
+        required: false
+        default: false
+        type: boolean
   workflow_call:
     inputs:
       platforms:
@@ -111,6 +117,13 @@ on:
         required: false
         default: false
         type: boolean
+      publish_github:
+        description: |
+          Publish the Linux builds to GitHub releases at https://github.com/r-hub/R/releases?
+          Requires the DEPLOY_TOKEN secret, with write access to r-hub/R.
+        required: false
+        default: false
+        type: boolean
     secrets:
       AWS_PUBLISH_ROLE:
         required: false
@@ -131,6 +144,8 @@ on:
       MACOS_NOTARIZATION_USER_PASSWORD:
         required: false
       APPLE_TEAM_ID:
+        required: false
+      DEPLOY_TOKEN:
         required: false
 
 permissions:
@@ -325,6 +340,54 @@ jobs:
           retention-days: 7
           if-no-files-found: warn
 
+      # Copy the packages (and the tarballs of portable builds) into
+      # gh-release/ with the file names used on https://github.com/r-hub/R/releases:
+      # r-rstudio-<platform>-<rest of package name>, and
+      # r-rstudio-<platform>-<r_version>-<x86_64|arm64>.tar.gz.
+      # devel/next packages get package version 1 instead of the date-based
+      # one, so the names stay the same and each nightly build overwrites the
+      # previous one. This copies, so it does not affect the S3 steps below.
+      - name: Stage files for GitHub release
+        if: ${{ inputs.publish_github }}
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          R_VERSION: ${{ matrix.r_version }}
+          ARCH: ${{ matrix.arch }}
+          PKG_VERSION: ${{ steps.pkg-version.outputs.version }}
+        run: |
+          mkdir -p gh-release
+          shopt -s nullglob
+          for f in builder/integration/tmp/"$PLATFORM"/*.deb \
+                   builder/integration/tmp/"$PLATFORM"/*.rpm \
+                   builder/integration/tmp/"$PLATFORM"/*.apk; do
+            name=$(basename "$f")
+            if [[ ("$R_VERSION" == "devel" || "$R_VERSION" == "next") && "$PKG_VERSION" != "1" ]]; then
+              name="${name/_${PKG_VERSION}_/_1_}"
+              name="${name/-${PKG_VERSION}-/-1-}"
+            fi
+            # Drop the leading r- / R- and add the platform prefix.
+            name="r-rstudio-${PLATFORM}-${name#[rR]-}"
+            cp "$f" "gh-release/$name"
+          done
+          case "$PLATFORM" in
+            manylinux_*|musllinux_*)
+              tar_arch=$([[ "$ARCH" == "arm64" ]] && echo arm64 || echo x86_64)
+              for f in builder/integration/tmp/r/"$PLATFORM"/*.tar.gz; do
+                cp "$f" "gh-release/r-rstudio-${PLATFORM}-${R_VERSION}-${tar_arch}.tar.gz"
+              done
+              ;;
+          esac
+          ls -l gh-release/
+
+      - name: Upload files for GitHub release
+        if: ${{ inputs.publish_github }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: gh-release-${{ matrix.r_version }}-${{ matrix.platform }}-${{ matrix.arch }}
+          path: gh-release/*
+          retention-days: 7
+          if-no-files-found: warn
+
       # Daily devel/next packages are built with a date-based version so that
       # Cloudsmith accepts a new package each night, but the CDN serves them
       # from fixed URLs (r-next_1_<arch>.deb, R-next-1-1.<arch>.rpm) that rely
@@ -487,6 +550,44 @@ jobs:
             $DRY_RUN_FLAG \
             "$CLOUDSMITH_REPO/$DISTRO" \
             "$pkg_file"
+
+  github-release:
+    # Run even if some builds failed (the build matrix uses fail-fast: false),
+    # so the successful builds are still published. This is a single job, not
+    # a matrix, so that two jobs never try to create the same release.
+    if: ${{ !cancelled() && inputs.publish_github && needs.build.result != 'skipped' }}
+    needs: [build, setup-matrix]
+    runs-on: ubuntu-latest
+    name: GitHub release (r-hub/R)
+    steps:
+      - name: Download files for GitHub release
+        uses: actions/download-artifact@v8
+        with:
+          pattern: gh-release-*
+          path: artifacts/
+
+      - name: Upload to GitHub releases
+        env:
+          GH_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
+          GH_REPO: r-hub/R
+          R_VERSIONS: ${{ needs.setup-matrix.outputs.r_versions }}
+        run: |
+          shopt -s nullglob
+          for ver in $(echo "$R_VERSIONS" | jq -r '.[]'); do
+            files=(artifacts/gh-release-"${ver}"-*/*)
+            if [[ ${#files[@]} -eq 0 ]]; then
+              echo "::warning::No files to publish for R $ver"
+              continue
+            fi
+            tag="v${ver}"
+            if ! gh release view "$tag" > /dev/null 2>&1; then
+              echo "Creating release $tag"
+              gh release create "$tag" --title "$ver" --notes "" --latest=false
+            fi
+            echo "Uploading to $tag:"
+            printf '  %s\n' "${files[@]##*/}"
+            gh release upload "$tag" --clobber "${files[@]}"
+          done
 
   build-macos:
     # Empty inputs.platforms means a push event (workflow input defaults don't apply to push).
