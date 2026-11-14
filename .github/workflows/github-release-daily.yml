@@ -1,0 +1,49 @@
+name: Daily GitHub release builds
+
+# Builds R and publishes the Linux builds to https://github.com/r-hub/R/releases.
+# Scheduled runs use the defaults below. Needs the DEPLOY_TOKEN secret,
+# with write access to r-hub/R.
+
+on:
+  schedule:
+    - cron: '0 5 * * *'
+  workflow_dispatch:
+    inputs:
+      platforms:
+        description: |
+          Comma-separated list of platforms. Specify "all" to use all platforms.
+        required: false
+        default: 'manylinux_2_28'
+        type: string
+      r_versions:
+        description: |
+          Comma-separated list of R versions, e.g. "next,devel" or "last-2".
+        required: false
+        default: 'next,devel'
+        type: string
+      arch:
+        description: |
+          Comma-separated list of architectures.
+        required: false
+        default: 'amd64,arm64'
+        type: choice
+        options:
+          - 'amd64,arm64'
+          - 'amd64'
+          - 'arm64'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  r-builds:
+    uses: ./.github/workflows/build.yml
+    with:
+      # Inputs are empty on scheduled runs, so fall back to the defaults.
+      platforms: ${{ inputs.platforms || 'manylinux_2_28' }}
+      r_versions: ${{ inputs.r_versions || 'next,devel' }}
+      arch: ${{ inputs.arch || 'amd64,arm64' }}
+      publish_github: true
+    secrets:
+      DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
